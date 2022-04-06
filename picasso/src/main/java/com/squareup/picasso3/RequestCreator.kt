@@ -325,14 +325,10 @@ class RequestCreator internal constructor(
   }
 
   /**
-   * Set inPurgeable and inInputShareable when decoding. This will force the bitmap to be decoded
-   * from a byte array instead of a stream, since inPurgeable only affects the former.
-   *
-   * *Note*: as of API level 21 (Lollipop), the inPurgeable field is deprecated and will be
-   * ignored.
+   * Add custom HTTP headers to the image network request, if desired
    */
-  fun purgeable(): RequestCreator {
-    data.purgeable()
+  fun addHeader(key: String, value: String): RequestCreator {
+    data.addHeader(key, value)
     return this
   }
 

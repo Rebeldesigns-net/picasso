@@ -27,6 +27,8 @@ import com.squareup.picasso3.Picasso.Priority.LOW
 import com.squareup.picasso3.Picasso.Priority.NORMAL
 import com.squareup.picasso3.RemoteViewsAction.AppWidgetAction
 import com.squareup.picasso3.RemoteViewsAction.NotificationAction
+import com.squareup.picasso3.TestUtils.CUSTOM_HEADER_NAME
+import com.squareup.picasso3.TestUtils.CUSTOM_HEADER_VALUE
 import com.squareup.picasso3.TestUtils.NO_EVENT_LISTENERS
 import com.squareup.picasso3.TestUtils.NO_HANDLERS
 import com.squareup.picasso3.TestUtils.NO_TRANSFORMERS
@@ -650,15 +652,12 @@ class RequestCreatorTest {
     assertThat(actionCaptor.value.request.key).isEqualTo(STABLE_URI_KEY_1)
   }
 
-  @Test fun notPurgeable() {
-    RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget())
+  @Test fun imageViewActionWithCustomHeaders() {
+    RequestCreator(picasso, URI_1, 0)
+      .addHeader(CUSTOM_HEADER_NAME, CUSTOM_HEADER_VALUE)
+      .into(mockImageViewTarget())
     verify(picasso).enqueueAndSubmit(actionCaptor.capture())
-    assertThat(actionCaptor.value.request.purgeable).isFalse()
-  }
-
-  @Test fun purgeable() {
-    RequestCreator(picasso, URI_1, 0).purgeable().into(mockImageViewTarget())
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture())
-    assertThat(actionCaptor.value.request.purgeable).isTrue()
+    assertThat(actionCaptor.value.request.headers!![CUSTOM_HEADER_NAME])
+      .isEqualTo(CUSTOM_HEADER_VALUE)
   }
 }

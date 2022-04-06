@@ -23,7 +23,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.Px
 import com.squareup.picasso3.Picasso.Priority
 import com.squareup.picasso3.Picasso.Priority.NORMAL
-import java.util.ArrayList
+import okhttp3.Headers
 import java.util.concurrent.TimeUnit.NANOSECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 
@@ -40,6 +40,9 @@ class Request internal constructor(builder: Builder) {
 
   /** The [NetworkPolicy] to use for this request. */
   @JvmField val networkPolicy: Int = builder.networkPolicy
+
+  /** HTTP headers for the request  */
+  @JvmField val headers: Headers? = builder.headers
 
   /**
    * The image URI.
@@ -106,9 +109,6 @@ class Request internal constructor(builder: Builder) {
   /** Whether or not [.rotationPivotX] and [.rotationPivotY] are set. */
   @JvmField val hasRotationPivot: Boolean = builder.hasRotationPivot
 
-  /** True if image should be decoded with inPurgeable and inInputShareable. */
-  @JvmField val purgeable: Boolean = builder.purgeable
-
   /** Target image config for decoding. */
   @JvmField val config: Config? = builder.config
 
@@ -166,9 +166,6 @@ class Request internal constructor(builder: Builder) {
           append(rotationPivotY)
         }
         append(')')
-      }
-      if (purgeable) {
-        append(" purgeable")
       }
       if (config != null) {
         append(' ')
@@ -284,7 +281,6 @@ class Request internal constructor(builder: Builder) {
     var rotationPivotX = 0f
     var rotationPivotY = 0f
     var hasRotationPivot = false
-    var purgeable = false
     var transformations: MutableList<Transformation>? = null
     var config: Config? = null
     var priority: Priority? = null
@@ -292,6 +288,7 @@ class Request internal constructor(builder: Builder) {
     var tag: Any? = null
     var memoryPolicy = 0
     var networkPolicy = 0
+    var headers: Headers? = null
 
     /** Start building a request using the specified [Uri]. */
     constructor(uri: Uri) {
@@ -326,7 +323,6 @@ class Request internal constructor(builder: Builder) {
       rotationPivotX = request.rotationPivotX
       rotationPivotY = request.rotationPivotY
       hasRotationPivot = request.hasRotationPivot
-      purgeable = request.purgeable
       onlyScaleDown = request.onlyScaleDown
       transformations = request.transformations.toMutableList()
       config = request.config
@@ -484,10 +480,6 @@ class Request internal constructor(builder: Builder) {
       hasRotationPivot = false
     }
 
-    fun purgeable() = apply {
-      purgeable = true
-    }
-
     /** Decode the image using the specified config.  */
     fun config(config: Config) = apply {
       this.config = config
@@ -552,6 +544,15 @@ class Request internal constructor(builder: Builder) {
       for (i in additional.indices) {
         this.networkPolicy = this.networkPolicy or additional[i].index
       }
+    }
+
+    fun addHeader(
+      name: String,
+      value: String
+    ) = apply {
+      this.headers = (headers?.newBuilder() ?: Headers.Builder())
+        .add(name, value)
+        .build()
     }
 
     /** Create the immutable [Request] object.  */
